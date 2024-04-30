@@ -66,6 +66,6 @@ class CongregationController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+
     }
 }

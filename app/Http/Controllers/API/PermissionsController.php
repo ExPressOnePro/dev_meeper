@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Permission;
 use Illuminate\Http\Request;
 
 class PermissionsController extends Controller
@@ -10,11 +11,11 @@ class PermissionsController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function get()
     {
-        //
+        $permissions = Permission::all();
+        return response()->json($permissions);
     }
-
     /**
      * Store a newly created resource in storage.
      */

@@ -14,10 +14,26 @@ class Stand extends Model
         'location',
         'congregation_id',
         'weeks_schedules',
-        'next_weeks',
         'publishers_to_stand',
         'show_next_weeks',
         'day_to_active',
         'time_to_active',
+        'active',
     ];
+
+    protected $casts = [
+        'weeks_schedules' => 'array',
+        'day_to_active' => 'array',
+        'time_to_active' => 'array',
+    ];
+
+    public function congregation()
+    {
+        return $this->belongsTo(Congregation::class);
+    }
+
+    public function records()
+    {
+        return $this->hasMany(StandRecord::class);
+    }
 }

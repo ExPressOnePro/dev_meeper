@@ -15,16 +15,15 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('location');
-            $table->foreignId('congregation_id')->constrained()->onDelete('cascade');
+            $table->foreignId('congregation_id')->constrained();
             $table->json('weeks_schedules');
             $table->integer('publishers_to_stand')->default(2);
-            $table->integer('next_weeks')->default(2);
-            $table->boolean('show_next_weeks')->default(true)->nullable();
-            $table->string('day_to_active')->nullable();
-            $table->string('time_to_active')->nullable();
+            $table->boolean('show_next_weeks')->default(false);
+            $table->json('day_to_active');
+            $table->json('time_to_active');
             $table->boolean('active')->default(true);
             $table->timestamps();
-        });
+        });;
     }
 
     /**
@@ -32,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('stands');
     }
 };

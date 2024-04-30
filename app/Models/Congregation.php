@@ -12,4 +12,6 @@ class Congregation extends Model
     protected $fillable = [
         'name',
     ];
+
+
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\CongregationController;
+use App\Http\Controllers\API\PermissionsController;
 use App\Http\Controllers\API\StandController;
 use App\Http\Controllers\API\StandRecordsController;
 use App\Models\Congregation;
@@ -22,6 +23,10 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+
+Route::get('/permissions', [PermissionsController::class, 'get']);
+
 
 
 Route::get('/stand', [StandController::class, 'index']);

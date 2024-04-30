@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('stand_records', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('stand_id')->constrained()->onDelete('cascade');
+            $table->foreignId('stand_id')->constrained();
             $table->date('date');
             $table->time('time');
-            $table->unsignedBigInteger('user_1')->nullable();
-            $table->unsignedBigInteger('user_2')->nullable();
-            $table->unsignedBigInteger('user_3')->nullable();
+            $table->foreignId('user_1')->nullable()->constrained('users');
+            $table->foreignId('user_2')->nullable()->constrained('users');
+            $table->foreignId('user_3')->nullable()->constrained('users');
             $table->timestamps();
-        });
+        });;
     }
 
     /**
