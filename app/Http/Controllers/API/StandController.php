@@ -18,9 +18,7 @@ class StandController extends Controller {
     {
 //      $congregationId = $request->get('congregation_id', Auth::user()->congregation_id);
 
-        return new JsonResponse(
-            ['data' => Stand::query()->where('congregation_id', 1)->get()]
-        );
+        return response()->json(Stand::query()->where('congregation_id', 1)->get(), 200);
     }
 
     /**

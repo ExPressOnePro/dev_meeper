@@ -18,12 +18,16 @@ return new class extends Migration
             $table->string('login')->unique();
             $table->string('email')->unique();
             $table->string('password');
-            $table->unsignedBigInteger('congregation_id');
-            $table->json('info');
+            $table->unsignedBigInteger('congregation_id')->nullable()->default(null);
+            $table->string('code', 6);
+            $table->string('role');
+            $table->string('account_status');
+            $table->string('mobile_phone')->nullable()->default(null);
             $table->text('user_agent');
+            $table->timestamp('last_login');
             $table->string('ip');
-            $table->timestamp('email_verified_at');
-            $table->rememberToken();
+            $table->timestamp('email_verified_at')->nullable()->default(null);
+            $table->rememberToken()->nullable()->default(null);
             $table->timestamps();
         });
     }

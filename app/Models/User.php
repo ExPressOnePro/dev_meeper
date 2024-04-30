@@ -3,8 +3,10 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Notifications\ConfirmPasswordNotification;
 use App\Traits\HasRolesAndPermissions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -19,9 +21,19 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
+        'login',
         'email',
         'password',
+        'congregation_id',
+        'code',
+        'role',
+        'account_status',
+        'mobile_phone',
+        'user_agent',
+        'ip',
+        'last_login',
     ];
 
     /**
@@ -42,4 +54,9 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function congregation(): BelongsTo
+    {
+        return $this->belongsTo(Congregation::class);
+    }
 }

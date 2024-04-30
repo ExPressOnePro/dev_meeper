@@ -7,58 +7,70 @@ use App\Models\Stand;
 use App\Models\StandRecords;
 use App\Models\User;
 use Carbon\Carbon;
+use http\Env\Response;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Inertia\Inertia;
 
 class StandRecordsController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index($id): JsonResponse
+    public function index($id): \Illuminate\Http\JsonResponse
     {
         $stand = Stand::findOrFail($id);
         $template = json_decode($stand->weeks_schedules, true);
-        $next_weeks = $stand->next_weeks;
+        $next_weeks_is = $stand->next_weeks; // цифра сколько следующих недель
         $publishers_to_stand = $stand->publishers_to_stand;
         $weeklyData = [];
 
-        for ($i = 1; $i <= $next_weeks; $i++) {
-            $weekKey = "week_$i";
+        $startDate = Carbon::now()->startOfWeek();
+
+        for ($min_week = 1; $min_week <= $next_weeks_is; $min_week++) {
+            $weekKey = "week_" . $min_week; // Создаем ключ в нужном формате
             if (isset($template[$weekKey])) {
                 $weekData = $template[$weekKey];
-                $startDate = Carbon::now()->startOfWeek();
 
-                $weekStartDate = $startDate->copy()->addWeeks($i)->startOfWeek()->format('Y-m-d');
-                $weekEndDate = $startDate->copy()->addWeeks($i)->endOfWeek()->format('Y-m-d');
+                $weekStartDate = $startDate->copy()->addWeeks($min_week - 1)->startOfWeek()->format('Y-m-d');
+                $weekEndDate = $startDate->copy()->addWeeks($min_week - 1)->endOfWeek()->format('Y-m-d');
 
-                $daysData = $this->getDaysData($weekData, $startDate, $i, $publishers_to_stand);
+                $daysData = $this->getDaysData($weekData, $startDate, $min_week, $publishers_to_stand);
 
-                $weeklyData[$weekKey] = [
-                    'date' => "$weekStartDate - $weekEndDate",
-                    'days' => $daysData,
+                $weeklyData[] = [
+                    'week_number' => $weekKey,
+                    'date_range' => "$weekStartDate - $weekEndDate",
+                    'days' => $daysData
+                ];
+
+            }
+        }
+
+        return response()->json($weeklyData);
+//        return Inertia::render('Stand/Stand', ['weeklyData' => $weeklyData,]);
+    }
+    private function getDaysData($weekData, $startDate, $min_week, $publishers_to_stand)
+    {
+        $daysData = [];
+
+        foreach ($weekData['days'] as $day) {
+            if (isset($day['days'])) {
+                $dayNumber = $day['day_number'];
+                $hours = $day['hours'];
+
+                $dayDate = $startDate->copy()->addWeeks($min_week - 1)->startOfWeek()->addDays($dayNumber - 1)->format('Y-m-d');
+                $hoursData = $this->getHoursData($hours, $dayDate, $publishers_to_stand);
+                $daysData[] = [
+                    'day_number' => $dayNumber,
+                    'date' => $dayDate,
+                    'hours' => $hoursData,
                 ];
             }
         }
 
-        return response()->json([$weeklyData]);
-    }
-
-    private function getDaysData($weekData, $startDate, $weekOffset, $publishers_to_stand)
-    {
-        $daysData = [];
-        foreach ($weekData as $day => $hours) {
-            $dayDate = $startDate->copy()->addDays($day - 1)->addWeeks($weekOffset - 1)->format('Y-m-d');
-            $hoursData = $this->getHoursData($hours, $dayDate, $publishers_to_stand);
-            $daysData[$day] = [
-                'date' => $dayDate,
-                'hour' => $hoursData,
-            ];
-        }
         return $daysData;
     }
-
     private function getHoursData($hours, $dayDate, $publishers_to_stand)
     {
         $hoursData = [];
@@ -71,7 +83,6 @@ class StandRecordsController extends Controller
         }
         return $hoursData;
     }
-
     private function getRecordData($dayDate, $hour, $publishers_to_stand)
     {
         $recordData = [];
@@ -79,20 +90,27 @@ class StandRecordsController extends Controller
             ->where('time', $hour)
             ->get();
         foreach ($standRecords as $record) {
+            $userData = [];
             for ($userIndex = 1; $userIndex <= $publishers_to_stand; $userIndex++) {
                 $user = User::find($record->{"user_$userIndex"});
                 if ($user) {
-                    $userData = [
+                    $userData[] = [
                         'user_id' => $user->id,
                         'first_name' => $user->name,
-                        'last_name' => "",
+                        'last_name' => $user->name,
                     ];
-                    $recordData["user_$userIndex"] = $userData;
                 }
             }
+            $recordData[] = [
+                'record_id' => $record->id,
+                'users' => $userData,
+            ];
         }
         return $recordData;
     }
+
+
+
     public function allStands(): JsonResponse
     {
         $stands = Stand::all();
@@ -114,7 +132,7 @@ class StandRecordsController extends Controller
         $standData = [];
 
         for ($i = 1; $i <= $next_weeks; $i++) {
-            $weekKey = "week_$i";
+            $weekKey = "$i";
             if (isset($template[$weekKey])) {
                 $weekData = $template[$weekKey];
                 $startDate = Carbon::now()->startOfWeek();
@@ -124,8 +142,11 @@ class StandRecordsController extends Controller
 
                 $daysData = $this->getDaysData($weekData, $startDate, $i, $publishers_to_stand);
 
-                $standData[$weekKey] = [
-                    'date' => "$weekStartDate - $weekEndDate",
+                $standData[] = [
+                    'date' => [
+                        'start' => $weekStartDate,
+                        'end' => $weekEndDate,
+                    ],
                     'days' => $daysData,
                 ];
             }
@@ -137,6 +158,9 @@ class StandRecordsController extends Controller
             'schedule' => $standData,
         ];
     }
+
+
+
 
 
     /**
@@ -207,6 +231,6 @@ class StandRecordsController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+
     }
 }

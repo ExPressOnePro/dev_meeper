@@ -3,14 +3,17 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class UserController extends Controller
 {
     /**
      * Display a listing of the resource.
+     * @param Request $request
      */
-    public function index()
+    public function index(Request $request)
     {
 
     }
@@ -26,9 +29,12 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($userId)
     {
-
+        $user = User::with('congregation')->findOrFail($userId);
+        return Inertia::render('User/Show', [
+            'user' => $user
+        ]);
     }
 
     /**
@@ -44,6 +50,6 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+
     }
 }
